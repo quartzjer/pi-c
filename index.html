@@ -221,6 +221,7 @@
           placeholder="Type your message..."
         ></div>
       </div>
+      <button id="submitBtn">Submit</button>
     </div>
 
     <div class="error-message" id="errorMessage"></div>
@@ -325,6 +326,28 @@
         }
       }
 
+      async analyzeImage(filename, message) {
+        try {
+          const response = await fetch('/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ filename, message })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Analysis failed.');
+          }
+
+          const data = await response.json();
+          console.log('Analysis result:', data);
+        } catch (error) {
+          this.showError(error.message);
+        }
+      }
+
       removeImage() {
         this.uploadedImage.src = '';
         this.imageContainer.style.display = 'none';
@@ -372,6 +395,20 @@
               }
             }
           }
+        }
+      });
+
+      const submitBtn = document.getElementById('submitBtn');
+
+      submitBtn.addEventListener('click', () => {
+        const message = editableArea.innerText.trim();
+        const imageUrl = imageUploadHandler.uploadedImage.src;
+        const filename = imageUrl.split('/').pop();
+
+        if (message && filename) {
+          imageUploadHandler.analyzeImage(filename, message);
+        } else {
+          imageUploadHandler.showError('Please upload an image and enter a message.');
         }
       });
     });

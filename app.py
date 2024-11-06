@@ -109,4 +109,4 @@ def serve_index():
     return send_file('./index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8000)
