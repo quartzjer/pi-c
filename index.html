@@ -241,6 +241,7 @@
         this.responseMessage = document.getElementById('responseMessage');
         this.canvas = null;
         this.setupListeners();
+        this.clearCanvas();
       }
 
       setupListeners() {
@@ -294,6 +295,7 @@
           return;
         }
         this.displayImage(file);
+        this.clearCanvas();
       }
 
       async displayImage(file) {
@@ -382,25 +384,38 @@
       }
 
       drawXOnImage(x, y) {
-        // Create a canvas overlay if it doesn't exist
+        // Get the displayed image dimensions
+        const displayedWidth = this.uploadedImage.clientWidth;
+        const displayedHeight = this.uploadedImage.clientHeight;
+
+        // Create or update the canvas overlay
         if (!this.canvas) {
           this.canvas = document.createElement('canvas');
-          this.canvas.width = this.uploadedImage.naturalWidth;
-          this.canvas.height = this.uploadedImage.naturalHeight;
           this.canvas.style.position = 'absolute';
           this.canvas.style.top = '0';
           this.canvas.style.left = '0';
-          this.canvas.style.width = '100%';
-          this.canvas.style.height = '100%';
           this.imageContainer.appendChild(this.canvas);
         }
 
+        // Set canvas dimensions
+        this.canvas.width = displayedWidth;
+        this.canvas.height = displayedHeight;
+        this.canvas.style.width = displayedWidth + 'px';
+        this.canvas.style.height = displayedHeight + 'px';
+
         const ctx = this.canvas.getContext('2d');
-        // Scale coordinates to the displayed image size
-        const scaleX = this.uploadedImage.width / this.uploadedImage.naturalWidth;
-        const scaleY = this.uploadedImage.height / this.uploadedImage.naturalHeight;
+
+        // Scale the coordinates to match the displayed image dimensions
+        const scaleX = displayedWidth / this.uploadedImage.naturalWidth;
+        const scaleY = displayedHeight / this.uploadedImage.naturalHeight;
+
         const scaledX = x * scaleX;
         const scaledY = y * scaleY;
+
+        console.log(`Drawing 'X' at (${scaledX}, ${scaledY})`);
+
+        // Clear the canvas before drawing
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Draw an 'X' at the specified coordinates
         ctx.strokeStyle = 'red';
@@ -413,10 +428,18 @@
         ctx.stroke();
       }
 
+      clearCanvas() {
+        if (this.canvas) {
+          const ctx = this.canvas.getContext('2d');
+          ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+
       removeImage() {
         this.uploadedImage.src = '';
         this.imageContainer.style.display = 'none';
         this.emptyState.style.display = 'flex';
+        this.clearCanvas();
       }
 
       showLoading() {
@@ -472,9 +495,11 @@
 
         if (message && filename) {
           imageUploadHandler.analyzeImage(filename, message);
+          editableArea.innerText = '';
         } else {
           imageUploadHandler.showError('Please upload an image and enter a message.');
         }
+        imageUploadHandler.clearCanvas();
       }
 
       submitBtn.addEventListener('click', submitForm);

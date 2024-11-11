@@ -2,7 +2,7 @@ from flask import Flask, send_file, request, jsonify, send_from_directory, abort
 import os
 import uuid
 from werkzeug.utils import secure_filename
-from PIL import Image
+from PIL import Image, ImageOps
 import anthropic
 from dotenv import load_dotenv
 import base64
@@ -35,6 +35,7 @@ def handle_upload():
         img = Image.open(file)
         if img.mode == 'RGBA':
             img = img.convert('RGB')
+        #img = ImageOps.fit(img, MAX_SIZE, Image.Resampling.LANCZOS)
         img.thumbnail(MAX_SIZE, Image.Resampling.LANCZOS)
 
         filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
@@ -61,6 +62,7 @@ def analyze_image():
 
     try:
         with Image.open(file_path) as img:
+            width, height = img.size
             with open(file_path, 'rb') as image_file:
                 base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
@@ -70,8 +72,8 @@ def analyze_image():
             tools=[{
                 "type": "computer_20241022",
                 "name": "computer",
-                "display_width_px": 1024,
-                "display_height_px": 768
+                "display_width_px": width,
+                "display_height_px": height
             }],
             messages=[{
                 "role": "user",
