@@ -6,6 +6,7 @@ from PIL import Image
 import anthropic
 from dotenv import load_dotenv
 import base64
+import json
 
 load_dotenv()
 client = anthropic.Anthropic()
@@ -92,7 +93,7 @@ def analyze_image():
             betas=["computer-use-2024-10-22"]
         )
         print(response.to_json())
-        return jsonify(response.to_json()), 200
+        return jsonify(json.loads(response.to_json())), 200
 
     except Exception as e:
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500

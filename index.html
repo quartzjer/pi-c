@@ -397,10 +397,10 @@
 
         const ctx = this.canvas.getContext('2d');
         // Scale coordinates to the displayed image size
-        const scaleX = this.canvas.width / this.uploadedImage.width;
-        const scaleY = this.canvas.height / this.uploadedImage.height;
-        const scaledX = x / scaleX;
-        const scaledY = y / scaleY;
+        const scaleX = this.uploadedImage.width / this.uploadedImage.naturalWidth;
+        const scaleY = this.uploadedImage.height / this.uploadedImage.naturalHeight;
+        const scaledX = x * scaleX;
+        const scaledY = y * scaleY;
 
         // Draw an 'X' at the specified coordinates
         ctx.strokeStyle = 'red';
@@ -465,7 +465,7 @@
 
       const submitBtn = document.getElementById('submitBtn');
 
-      submitBtn.addEventListener('click', () => {
+      function submitForm() {
         const message = editableArea.innerText.trim();
         const imageUrl = imageUploadHandler.uploadedImage.src;
         const filename = imageUrl.split('/').pop();
@@ -474,6 +474,15 @@
           imageUploadHandler.analyzeImage(filename, message);
         } else {
           imageUploadHandler.showError('Please upload an image and enter a message.');
+        }
+      }
+
+      submitBtn.addEventListener('click', submitForm);
+
+      editableArea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          submitForm();
         }
       });
     });
