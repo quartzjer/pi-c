@@ -203,7 +203,7 @@
         <div class="spinner"></div>
       </div>
     </div>
-
+    <div class="response-message" id="responseMessage" style="display: none;"></div>
     <div class="input-controls">
      <div class="attachment-btn">
         <input type="file" id="fileInput" accept="image/*">
@@ -238,6 +238,8 @@
         this.uploadedImage = document.getElementById('uploadedImage');
         this.removeBtn = document.getElementById('removeBtn');
         this.emptyState = document.getElementById('emptyState');
+        this.responseMessage = document.getElementById('responseMessage');
+        this.canvas = null;
         this.setupListeners();
       }
 
@@ -328,6 +330,7 @@
 
       async analyzeImage(filename, message) {
         try {
+          this.showLoading();
           const response = await fetch('/analyze', {
             method: 'POST',
             headers: {
@@ -343,9 +346,71 @@
 
           const data = await response.json();
           console.log('Analysis result:', data);
+
+          // Process the response
+          this.displayResponse(data);
         } catch (error) {
           this.showError(error.message);
+        } finally {
+          this.hideLoading();
         }
+      }
+
+      displayResponse(data) {
+        // Display the text response
+        let textContent = null;
+        let toolUse = null;
+
+        for (const item of data.content) {
+          if (item.type === 'text') {
+            textContent = item;
+          } else if (item.type === 'tool_use') {
+            toolUse = item;
+          }
+        }
+
+        if (textContent) {
+          this.responseMessage.textContent = textContent.text;
+          this.responseMessage.style.display = 'block';
+        }
+
+        // Find the coordinates
+        if (toolUse && toolUse.input && toolUse.input.coordinate) {
+          const [x, y] = toolUse.input.coordinate;
+          this.drawXOnImage(x, y);
+        }
+      }
+
+      drawXOnImage(x, y) {
+        // Create a canvas overlay if it doesn't exist
+        if (!this.canvas) {
+          this.canvas = document.createElement('canvas');
+          this.canvas.width = this.uploadedImage.naturalWidth;
+          this.canvas.height = this.uploadedImage.naturalHeight;
+          this.canvas.style.position = 'absolute';
+          this.canvas.style.top = '0';
+          this.canvas.style.left = '0';
+          this.canvas.style.width = '100%';
+          this.canvas.style.height = '100%';
+          this.imageContainer.appendChild(this.canvas);
+        }
+
+        const ctx = this.canvas.getContext('2d');
+        // Scale coordinates to the displayed image size
+        const scaleX = this.canvas.width / this.uploadedImage.width;
+        const scaleY = this.canvas.height / this.uploadedImage.height;
+        const scaledX = x / scaleX;
+        const scaledY = y / scaleY;
+
+        // Draw an 'X' at the specified coordinates
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(scaledX - 10, scaledY - 10);
+        ctx.lineTo(scaledX + 10, scaledY + 10);
+        ctx.moveTo(scaledX + 10, scaledY - 10);
+        ctx.lineTo(scaledX - 10, scaledY + 10);
+        ctx.stroke();
       }
 
       removeImage() {

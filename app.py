@@ -35,11 +35,11 @@ def handle_upload():
         if img.mode == 'RGBA':
             img = img.convert('RGB')
         img.thumbnail(MAX_SIZE, Image.Resampling.LANCZOS)
-        
+
         filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
         path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         img.save(path, 'PNG', optimize=True)
-        
+
         return jsonify({'url': f"/cache/{filename}"}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -49,20 +49,20 @@ def analyze_image():
     data = request.get_json()
     if not data or 'filename' not in data or 'message' not in data:
         return jsonify({'error': 'Missing filename or message in request'}), 400
-    
+
     filename = data['filename']
     message = data['message']
-    
+
     # Verify image exists and is valid
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     if not os.path.exists(file_path):
         return jsonify({'error': 'Image not found'}), 404
-    
+
     try:
         with Image.open(file_path) as img:
             with open(file_path, 'rb') as image_file:
                 base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-        
+
         response = client.beta.messages.create(
             model="claude-3-5-sonnet-20241022",
             max_tokens=1024,
@@ -73,11 +73,11 @@ def analyze_image():
                 "display_height_px": 768
             }],
             messages=[{
-                "role": "user", 
+                "role": "user",
                 "content": [
                     {
                         "type": "text",
-                        "text": message
+                        "text": f"You only have the computer tool available, and the only supported action is mouse_move, please interpret the user's message as a request to move the mouse to the position they are indicating. Provide any other helpful answer in your text response as well.\n\nHere's the user's request: {message}"
                     },
                     {
                         "type": "image",
@@ -93,7 +93,7 @@ def analyze_image():
         )
         print(response.to_json())
         return jsonify(response.to_json()), 200
-        
+
     except Exception as e:
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
 
