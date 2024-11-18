@@ -333,6 +333,7 @@
       async analyzeImage(filename, message) {
         try {
           this.showLoading();
+          console.log('Analyzing image:', filename, message);
           const response = await fetch('/analyze', {
             method: 'POST',
             headers: {

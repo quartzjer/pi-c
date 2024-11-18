@@ -111,5 +111,9 @@ def serve_image(filename):
 def serve_index():
     return send_file('./index.html')
 
+@app.route('/favicon.ico')
+def serve_favicon():
+    return '', 204
+
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=8008)
