@@ -1,6 +1,6 @@
 # Pi-C (Picture Coordinate Finder)
 
-A simplistic interactive web app where you can upload images and then ask to find specific coordinates within the image. Powered by Anthropic's Claude API and new Computer Use functions. (Also largely coded by Claude Sonnet 3.5)
+A simplistic interactive web app where you can upload images and then ask to find specific coordinates within the image. Powered by Anthropic's Claude API and OpenAI's API for comparison. (Also largely coded by Claude Sonnet 3.7)
 
 ![Screenshot](screenshot.png)
 
@@ -11,9 +11,10 @@ A simplistic interactive web app where you can upload images and then ask to fin
 ```bash
 pip install -r requirements.txt
 ```
-3. Create a `.env` file in the root directory and add your Anthropic API key:
+3. Create a `.env` file in the root directory and add your API keys:
 ```bash
-ANTHROPIC_API_KEY=your_api_key_here
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 4. Run the application:
 ```bash
@@ -37,11 +38,12 @@ python app.py
 
 4. The application will:
    - Mark the location with a red X
-   - Provide a text response about the location
+   - Provide text responses from both Claude and OpenAI for comparison
+   - Display coordinate results from both models
 
 ## Technical Details
 
 - Frontend: Vanilla JavaScript with modern DOM APIs
 - Backend: Flask (Python)
 - Image Processing: Pillow library
-- AI: Claude 3 Sonnet with computer vision capabilities
+- AI: Claude Sonnet 3.7 and OpenAI 4o models with computer vision capabilities
