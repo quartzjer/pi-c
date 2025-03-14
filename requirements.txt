@@ -2,3 +2,4 @@ flask
 pillow
 anthropic
 python-dotenv
+openai
